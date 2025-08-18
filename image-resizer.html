@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Resizer | ToolsWorld</title>
+    <style>
+        :root {
+            --primary: #1a237e;
+            --primary-light: #534bae;
+            --primary-dark: #000051;
+            --secondary: #00acc1;
+            --text-light: #f5f5f5;
+            --text-dark: #212121;
+            --bg-light: #f8f9fa;
+            --card-bg: #ffffff;
+            --border-radius: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .tool-header {
+            background-color: var(--primary);
+            color: var(--text-light);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .tool-header h1 {
+            margin-bottom: 10px;
+        }
+
+        .tool-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .tool-content {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .upload-section {
+            border: 2px dashed #ccc;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+        }
+
+        .upload-section:hover {
+            border-color: var(--secondary);
+            background-color: rgba(0, 172, 193, 0.05);
+        }
+
+        .upload-section.active {
+            border-color: var(--secondary);
+            background-color: rgba(0, 172, 193, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: var(--secondary);
+            margin-bottom: 15px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .btn {
+            background-color: var(--secondary);
+            color: var(--text-light);
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            margin-top: 15px;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-light);
+        }
+
+        .btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .preview-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .options-section {
+            grid-column: 1 / -1;
+            background-color: rgba(0, 0, 0, 0.02);
+            padding: 20px;
+            border-radius: var(--border-radius);
+        }
+
+        .option-group {
+            margin-bottom: 20px;
+        }
+
+        .option-group h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .size-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .size-option {
+            display: flex;
+            align-items: center;
+        }
+
+        .size-option input {
+            margin-right: 8px;
+        }
+
+        .custom-size {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .custom-size input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+        }
+
+        .dimension-info {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .download-section {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 20px 0;
+            border-top: 1px solid #eee;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="tool-header">
+            <h1>Image Resizer</h1>
+            <p>Resize your images quickly and easily</p>
+        </div>
+
+        <div class="tool-content">
+            <!-- Upload Section -->
+            <div class="upload-section" id="uploadSection">
+                <div class="upload-icon">📁</div>
+                <h3>Upload Your Image</h3>
+                <p>Drag & drop or click to select</p>
+                <input type="file" id="fileInput" class="file-input" accept="image/*">
+                <button class="btn" id="uploadBtn">Select Image</button>
+            </div>
+
+            <!-- Preview Section -->
+            <div class="preview-section">
+                <img id="imagePreview" class="image-preview" alt="Image Preview">
+                <div id="previewText">
+                    <div class="upload-icon">🖼️</div>
+                    <p>Your resized image will appear here</p>
+                </div>
+            </div>
+
+            <!-- Options Section -->
+            <div class="options-section">
+                <div class="option-group">
+                    <h3>Resize Options</h3>
+                    <div class="size-options">
+                        <label class="size-option">
+                            <input type="radio" name="sizeOption" value="preset" checked> Preset Sizes
+                        </label>
+                        <label class="size-option">
+                            <input type="radio" name="sizeOption" value="custom"> Custom Size
+                        </label>
+                    </div>
+
+                    <div id="presetSizes">
+                        <div class="size-options">
+                            <label class="size-option">
+                                <input type="radio" name="presetSize" value="800x600" checked> 800×600 (Small)
+                            </label>
+                            <label class="size-option">
+                                <input type="radio" name="presetSize" value="1024x768"> 1024×768 (Medium)
+                            </label>
+                            <label class="size-option">
+                                <input type="radio" name="presetSize" value="1280x720"> 1280×720 (HD)
+                            </label>
+                            <label class="size-option">
+                                <input type="radio" name="presetSize" value="1920x1080"> 1920×1080 (Full HD)
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="customSize" style="display: none;">
+                        <div class="custom-size">
+                            <input type="number" id="customWidth" placeholder="Width" min="1">
+                            <span>×</span>
+                            <input type="number" id="customHeight" placeholder="Height" min="1">
+                        </div>
+                        <div class="size-options" style="margin-top: 10px;">
+                            <label class="size-option">
+                                <input type="checkbox" id="maintainAspect" checked> Maintain aspect ratio
+                            </label>
+                        </div>
+                        <p class="dimension-info" id="dimensionInfo"></p>
+                    </div>
+                </div>
+
+                <div class="option-group">
+                    <h3>Format Options</h3>
+                    <div class="size-options">
+                        <label class="size-option">
+                            <input type="radio" name="formatOption" value="original" checked> Keep original
+                        </label>
+                        <label class="size-option">
+                            <input type="radio" name="formatOption" value="jpeg"> JPEG
+                        </label>
+                        <label class="size-option">
+                            <input type="radio" name="formatOption" value="png"> PNG
+                        </label>
+                        <label class="size-option">
+                            <input type="radio" name="formatOption" value="webp"> WebP
+                        </label>
+                    </div>
+                    <div class="size-options" id="qualityOption" style="display: none;">
+                        <label style="display: flex; align-items: center;">
+                            Quality: 
+                            <input type="range" id="qualitySlider" min="1" max="100" value="90" style="margin: 0 10px;">
+                            <span id="qualityValue">90%</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Download Section -->
+            <div class="download-section">
+                <button class="btn download-btn" id="downloadBtn" disabled>
+                    Download Resized Image
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>ToolsWorld - Simplifying your digital life</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const uploadSection = document.getElementById('uploadSection');
+            const fileInput = document.getElementById('fileInput');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const imagePreview = document.getElementById('imagePreview');
+            const previewText = document.getElementById('previewText');
+            const sizeOptionRadios = document.querySelectorAll('input[name="sizeOption"]');
+            const presetSizesDiv = document.getElementById('presetSizes');
+            const customSizeDiv = document.getElementById('customSize');
+            const maintainAspect = document.getElementById('maintainAspect');
+            const customWidth = document.getElementById('customWidth');
+            const customHeight = document.getElementById('customHeight');
+            const dimensionInfo = document.getElementById('dimensionInfo');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const formatOptions = document.querySelectorAll('input[name="formatOption"]');
+            const qualityOption = document.getElementById('qualityOption');
+            const qualitySlider = document.getElementById('qualitySlider');
+            const qualityValue = document.getElementById('qualityValue');
+
+            // Variables
+            let originalImage = null;
+            let originalWidth = 0;
+            let originalHeight = 0;
+            let aspectRatio = 0;
+
+            // Event Listeners
+            uploadBtn.addEventListener('click', () => fileInput.click());
+            
+            uploadSection.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadSection.classList.add('active');
+            });
+            
+            uploadSection.addEventListener('dragleave', () => {
+                uploadSection.classList.remove('active');
+            });
+            
+            uploadSection.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadSection.classList.remove('active');
+                
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    handleFileSelection();
+                }
+            });
+            
+            fileInput.addEventListener('change', handleFileSelection);
+            
+            sizeOptionRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.value === 'preset') {
+                        presetSizesDiv.style.display = 'block';
+                        customSizeDiv.style.display = 'none';
+                    } else {
+                        presetSizesDiv.style.display = 'none';
+                        customSizeDiv.style.display = 'block';
+                    }
+                });
+            });
+            
+            maintainAspect.addEventListener('change', function() {
+                if (this.checked && originalImage) {
+                    customHeight.value = Math.round(customWidth.value / aspectRatio);
+                    updateDimensionInfo();
+                }
+            });
+            
+            customWidth.addEventListener('input', function() {
+                if (maintainAspect.checked && originalImage) {
+                    customHeight.value = Math.round(this.value / aspectRatio);
+                }
+                updateDimensionInfo();
+            });
+            
+            customHeight.addEventListener('input', function() {
+                if (maintainAspect.checked && originalImage) {
+                    customWidth.value = Math.round(this.value * aspectRatio);
+                }
+                updateDimensionInfo();
+            });
+            
+            formatOptions.forEach(option => {
+                option.addEventListener('change', function() {
+                    if (this.value === 'jpeg') {
+                        qualityOption.style.display = 'block';
+                    } else {
+                        qualityOption.style.display = 'none';
+                    }
+                });
+            });
+            
+            qualitySlider.addEventListener('input', function() {
+                qualityValue.textContent = this.value + '%';
+            });
+            
+            downloadBtn.addEventListener('click', downloadResizedImage);
+
+            // Functions
+            function handleFileSelection() {
+                const file = fileInput.files[0];
+                if (!file || !file.type.match('image.*')) {
+                    alert('Please select a valid image file (JPEG, PNG, etc.)');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    originalImage = new Image();
+                    originalImage.onload = function() {
+                        originalWidth = this.width;
+                        originalHeight = this.height;
+                        aspectRatio = originalWidth / originalHeight;
+                        
+                        // Display original image
+                        imagePreview.src = e.target.result;
+                        imagePreview.style.display = 'block';
+                        previewText.style.display = 'none';
+                        
+                        // Enable download button
+                        downloadBtn.disabled = false;
+                        
+                        // Set custom size inputs
+                        customWidth.value = originalWidth;
+                        customHeight.value = originalHeight;
+                        
+                        // Update dimension info
+                        updateDimensionInfo();
+                    };
+                    originalImage.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+            
+            function updateDimensionInfo() {
+                if (!originalImage) return;
+                
+                const width = parseInt(customWidth.value) || originalWidth;
+                const height = parseInt(customHeight.value) || originalHeight;
+                
+                const widthChange = Math.round((width / originalWidth) * 100);
+                const heightChange = Math.round((height / originalHeight) * 100);
+                
+                dimensionInfo.textContent = `Original: ${originalWidth}×${originalHeight} | New: ${width}×${height} (${widthChange}% × ${heightChange}%)`;
+            }
+            
+            function getTargetDimensions() {
+                let width, height;
+                
+                const sizeOption = document.querySelector('input[name="sizeOption"]:checked').value;
+                
+                if (sizeOption === 'preset') {
+                    const presetSize = document.querySelector('input[name="presetSize"]:checked').value;
+                    [width, height] = presetSize.split('x').map(Number);
+                } else {
+                    width = parseInt(customWidth.value) || originalWidth;
+                    height = parseInt(customHeight.value) || originalHeight;
+                }
+                
+                return { width, height };
+            }
+            
+            function getSelectedFormat() {
+                return document.querySelector('input[name="formatOption"]:checked').value;
+            }
+            
+            function downloadResizedImage() {
+                if (!originalImage) return;
+                
+                const { width, height } = getTargetDimensions();
+                const format = getSelectedFormat();
+                const quality = qualitySlider.value / 100;
+                
+                // Create canvas for resizing
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                
+                // Draw image on canvas
+                ctx.drawImage(originalImage, 0, 0, width, height);
+                
+                // Get the resized image data
+                let mimeType, extension;
+                
+                if (format === 'original') {
+                    // Use original format if possible, otherwise default to JPEG
+                    const file = fileInput.files[0];
+                    mimeType = file.type || 'image/jpeg';
+                    extension = file.name.split('.').pop() || 'jpg';
+                } else {
+                    mimeType = `image/${format}`;
+                    extension = format;
+                }
+                
+                // Handle WebP special case
+                if (format === 'webp') {
+                    mimeType = 'image/webp';
+                    extension = 'webp';
+                }
+                
+                // Create download link
+                const link = document.createElement('a');
+                let dataURL;
+                
+                if (mimeType === 'image/jpeg') {
+                    dataURL = canvas.toDataURL(mimeType, quality);
+                } else {
+                    dataURL = canvas.toDataURL(mimeType);
+                }
+                
+                link.download = `resized-image.${extension}`;
+                link.href = dataURL;
+                link.click();
+            }
+        });
+    </script>
+</body>
+</html>
