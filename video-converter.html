@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ToolsWorld - Video Converter</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #0b1e3f;
+      font-family: 'Segoe UI', sans-serif;
+      color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 50px 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      background-color: #142a4f;
+      padding: 30px;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 25px;
+      color: #00baff;
+    }
+
+    input, select {
+      padding: 10px;
+      margin: 10px 0;
+      width: 100%;
+      border-radius: 6px;
+      background-color: #0e2a51;
+      border: 1px solid #0077cc;
+      color: white;
+    }
+
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      background-color: #0077cc;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #005fa3;
+    }
+
+    #status {
+      margin-top: 20px;
+      color: #00ffcc;
+    }
+
+    a.download-link {
+      margin-top: 15px;
+      display: inline-block;
+      color: #00baff;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>🛠 ToolsWorld - Video Converter</h1>
+
+    <input type="file" id="videoInput" accept="video/*" />
+    
+    <select id="formatSelect">
+      <option value="webm">Convert to WebM</option>
+      <option value="mp4">Convert to MP4</option>
+      <option value="avi">Convert to AVI</option>
+    </select>
+
+    <button onclick="convertVideo()">Convert Video</button>
+
+    <div id="status"></div>
+    <a id="downloadLink" class="download-link" style="display:none;" download>Download Converted Video</a>
+  </div>
+
+  <!-- ffmpeg.wasm library -->
+  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/ffmpeg.min.js"></script>
+
+  <script>
+    const { createFFmpeg, fetchFile } = FFmpeg;
+    const ffmpeg = createFFmpeg({ log: true });
+    const status = document.getElementById('status');
+    const downloadLink = document.getElementById('downloadLink');
+
+    async function convertVideo() {
+      const fileInput = document.getElementById('videoInput');
+      const format = document.getElementById('formatSelect').value;
+
+      if (!fileInput.files.length) {
+        alert("Please upload a video file.");
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const fileName = file.name;
+      const inputName = 'input.' + fileName.split('.').pop();
+      const outputName = `output.${format}`;
+
+      status.innerText = 'Loading FFmpeg...';
+      if (!ffmpeg.isLoaded()) await ffmpeg.load();
+
+      status.innerText = 'Processing...';
+
+      ffmpeg.FS('writeFile', inputName, await fetchFile(file));
+
+      await ffmpeg.run('-i', inputName, outputName);
+
+      const data = ffmpeg.FS('readFile', outputName);
+      const videoBlob = new Blob([data.buffer], { type: 'video/' + format });
+      const videoUrl = URL.createObjectURL(videoBlob);
+
+      downloadLink.href = videoUrl;
+      downloadLink.download = outputName;
+      downloadLink.style.display = 'inline-block';
+      downloadLink.innerText = 'Download ' + outputName;
+
+      status.innerText = 'Conversion Complete!';
+    }
+  </script>
+
+</body>
+</html>
