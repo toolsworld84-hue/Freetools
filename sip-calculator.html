@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ToolsWorld - SIP Calculator</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #0b1e3f;
+      font-family: 'Segoe UI', sans-serif;
+      color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 50px 20px;
+      min-height: 100vh;
+    }
+
+    .calculator {
+      background-color: #142a4f;
+      padding: 30px;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #00baff;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #0077cc;
+      background-color: #0e2a51;
+      color: white;
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #0077cc;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #005fa3;
+    }
+
+    .results {
+      margin-top: 25px;
+      background-color: #1b355b;
+      padding: 20px;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .results p {
+      margin: 10px 0;
+      font-size: 16px;
+    }
+
+    .highlight {
+      color: #00baff;
+      font-weight: bold;
+    }
+
+    @media (max-width: 500px) {
+      h1 {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="calculator">
+    <h1>🛠 ToolsWorld - SIP Calculator</h1>
+
+    <label for="monthlyAmount">Monthly Investment (₹)</label>
+    <input type="number" id="monthlyAmount" placeholder="e.g. 5000" />
+
+    <label for="returnRate">Expected Annual Return (%)</label>
+    <input type="number" id="returnRate" placeholder="e.g. 12" step="0.01" />
+
+    <label for="years">Investment Duration (Years)</label>
+    <input type="number" id="years" placeholder="e.g. 10" />
+
+    <button onclick="calculateSIP()">Calculate</button>
+
+    <div class="results" id="resultBox">
+      <p>Total Invested Amount: <span class="highlight" id="investedAmount">₹ 0.00</span></p>
+      <p>Estimated Returns: <span class="highlight" id="returns">₹ 0.00</span></p>
+      <p>Total Value (Future Value): <span class="highlight" id="totalValue">₹ 0.00</span></p>
+    </div>
+  </div>
+
+  <script>
+    function calculateSIP() {
+      const monthlyInvestment = parseFloat(document.getElementById("monthlyAmount").value);
+      const annualRate = parseFloat(document.getElementById("returnRate").value);
+      const years = parseFloat(document.getElementById("years").value);
+
+      if (isNaN(monthlyInvestment) || isNaN(annualRate) || isNaN(years) ||
+          monthlyInvestment <= 0 || annualRate <= 0 || years <= 0) {
+        alert("Please enter valid positive numbers in all fields.");
+        return;
+      }
+
+      const months = years * 12;
+      const monthlyRate = annualRate / 12 / 100;
+
+      const futureValue = monthlyInvestment * ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate) * (1 + monthlyRate);
+      const investedAmount = monthlyInvestment * months;
+      const estimatedReturns = futureValue - investedAmount;
+
+      document.getElementById("investedAmount").textContent = "₹ " + investedAmount.toFixed(2);
+      document.getElementById("returns").textContent = "₹ " + estimatedReturns.toFixed(2);
+      document.getElementById("totalValue").textContent = "₹ " + futureValue.toFixed(2);
+      document.getElementById("resultBox").style.display = "block";
+    }
+  </script>
+
+</body>
+</html>
