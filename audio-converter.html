@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ToolsWorld - Audio Converter</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #0b1e3f;
+      font-family: 'Segoe UI', sans-serif;
+      color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 50px 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      background-color: #142a4f;
+      padding: 30px;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 25px;
+      color: #00baff;
+    }
+
+    input, select {
+      padding: 10px;
+      margin: 10px 0;
+      width: 100%;
+      border-radius: 6px;
+      background-color: #0e2a51;
+      border: 1px solid #0077cc;
+      color: white;
+    }
+
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      background-color: #0077cc;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #005fa3;
+    }
+
+    #status {
+      margin-top: 20px;
+      color: #00ffcc;
+    }
+
+    a.download-link {
+      margin-top: 15px;
+      display: inline-block;
+      color: #00baff;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>🎵 ToolsWorld - Audio Converter</h1>
+
+    <input type="file" id="audioInput" accept="audio/*" />
+    
+    <select id="formatSelect">
+      <option value="mp3">Convert to MP3</option>
+      <option value="wav">Convert to WAV</option>
+      <option value="ogg">Convert to OGG</option>
+    </select>
+
+    <button onclick="convertAudio()">Convert Audio</button>
+
+    <div id="status"></div>
+    <a id="downloadLink" class="download-link" style="display:none;" download>Download Converted Audio</a>
+  </div>
+
+  <!-- Load ffmpeg.wasm -->
+  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/ffmpeg.min.js"></script>
+
+  <script>
+    const { createFFmpeg, fetchFile } = FFmpeg;
+    const ffmpeg = createFFmpeg({ log: true });
+    const status = document.getElementById('status');
+    const downloadLink = document.getElementById('downloadLink');
+
+    async function convertAudio() {
+      const fileInput = document.getElementById('audioInput');
+      const format = document.getElementById('formatSelect').value;
+
+      if (!fileInput.files.length) {
+        alert("Please select an audio file.");
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const inputName = 'input.' + file.name.split('.').pop();
+      const outputName = `output.${format}`;
+
+      status.innerText = 'Loading FFmpeg...';
+      if (!ffmpeg.isLoaded()) await ffmpeg.load();
+
+      status.innerText = 'Converting... Please wait.';
+
+      ffmpeg.FS('writeFile', inputName, await fetchFile(file));
+
+      try {
+        await ffmpeg.run('-i', inputName, outputName);
+        const data = ffmpeg.FS('readFile', outputName);
+        const blob = new Blob([data.buffer], { type: 'audio/' + format });
+        const url = URL.createObjectURL(blob);
+
+        downloadLink.href = url;
+        downloadLink.download = outputName;
+        downloadLink.style.display = 'inline-block';
+        downloadLink.textContent = `Download ${outputName}`;
+        status.innerText = 'Conversion complete!';
+      } catch (e) {
+        status.innerText = '❌ Conversion failed.';
+        console.error(e);
+      }
+    }
+  </script>
+
+</body>
+</html>
